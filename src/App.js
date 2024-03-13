@@ -10,7 +10,7 @@ function App() {
   const [pokemonData, setPokemonData] = useState(null); // Used for the api to hold data
   const [pokemonImage, setPokemonImage] = useState(''); // Holds the image url for the pokemon
   const [imageType, setImageType] = useState('regular'); // Used to track the current image type
-
+  const [rngId, setRngId] = useState('')
 
   // My Api Function
   const handleSearch = async () => {
@@ -18,7 +18,7 @@ function App() {
     const data = await promise.json();
     setPokemonData(data)
     setPokemonImage(data.sprites.other["official-artwork"].front_default)
-    console.log(pokemonData)
+    console.log(search)
   };
 
   // Capatlises the first letter of my moves and abilites for beauty sake
@@ -42,8 +42,11 @@ function App() {
     }
   };
 
+  // ASK ABOUT HOW TO FIX RANDOMCLICK FUNCTION NOT WORKING
   const handleRandomClick = () => {
-    const randomId = Math.floor(Math.random() * 600) + 1;
+    const randomId = Math.floor(Math.random() * 1025) + 1;
+    setRngId(randomId)
+    console.log(rngId)
   }
 
   return (
@@ -92,76 +95,79 @@ function App() {
             {/* Pokemon image and the buttons beneath it are in this col */}
             <img src={pokemonImage} width='100%' alt='Searched Pokemon' onClick={handleImageClick} style={{ cursor: 'pointer' }}></img>
 
-          <button className='border-0 rounded-5 mt-1 py-1 twf'>
-            Favorite
-          </button>
-          <br></br>
-          <button className='border-0 rounded-5 my-1 py-1 twf'>
-            Evolutions
-          </button>
-          <br></br>
-          <button className='border-0 rounded-5 py-1 twf mb-5'>
-            Random
-          </button>
-        </Col>
+            <button className='border-0 rounded-5 mt-1 py-1 twf'>
+              Favorite
+            </button>
+            <br></br>
+            <button className='border-0 rounded-5 my-1 py-1 twf'>
+              Evolutions
+            </button>
+            <br></br>
+            <button className='border-0 rounded-5 py-1 twf mb-5' onClick={handleRandomClick}>
+              Random
+            </button>
+          </Col>
 
-        {/* Pokemon name, Abilities, and Moves are here */}
-        <Col lg={8} md={6} className='pt-4'>
-          <Row>
-            <Col>
-              <p className='fourty ps-4 ms-3'>
-                {/* This && function checks if pokemon data & pokemon name exist if not it does not run */}
-                {pokemonData && pokemonData.name && (
-                  <span>
-                    {capitalizeFirstLetter(pokemonData.name)}
-                  </span>
-                )}
-              </p>
-            </Col>
-            <Col className='text-end'>
+          {/* Pokemon name, Abilities, and Moves are here */}
+          <Col lg={8} md={6} className='pt-4'>
+            <Row>
+              <Col>
+                <p className='fourty ps-4 ms-3'>
+                  {/* This && function checks if pokemon data & pokemon name exist if not it does not run */}
+                  {pokemonData && pokemonData.name && (
+                    <span>
+                      {capitalizeFirstLetter(pokemonData.name)}
+                      {' '}
+                      {'#'}
+                      {(pokemonData.id)}
+                    </span>
+                  )}
+                </p>
+              </Col>
+              <Col className='text-end'>
 
-            </Col>
-          </Row>
+              </Col>
+            </Row>
 
-          {/* Abilites start here */}
-          <p className='ps-4 ms-3 thirty'>
-            All Abilites
-          </p>
-          <p className='ps-4 ms-3 twenty scrolltxt'>
-            {pokemonData && pokemonData.abilities && (
-              <span>
-                {pokemonData.abilities.map((pokeabty, e) => (
-                  <span key={e}>
-                    {capitalizeFirstLetter(pokeabty.ability.name)}
-                    {e !== pokemonData.abilities.length - 1 && ', '}
-                  </span>
-                ))}
-              </span>
-            )}
-          </p>
-
-          {/* Moves Start here */}
-          <p className='ps-4 ms-3 thirty'>
-            All Moves
-          </p>
-          <Row>
-            <Col lg={6} className='ps-4 ms-4 twenty scrolltxt mb-5'>
-              {pokemonData && pokemonData.moves && (
+            {/* Abilites start here */}
+            <p className='ps-4 ms-3 thirty'>
+              All Abilites
+            </p>
+            <p className='ps-4 ms-3 twenty scrolltxt'>
+              {pokemonData && pokemonData.abilities && (
                 <span>
-                  {pokemonData.moves.map((pokemove, e) => (
+                  {pokemonData.abilities.map((pokeabty, e) => (
                     <span key={e}>
-                      {capitalizeFirstLetter(pokemove.move.name)}
-                      {e !== pokemonData.moves.length - 1 && ', '}
+                      {capitalizeFirstLetter(pokeabty.ability.name)}
+                      {e !== pokemonData.abilities.length - 1 && ', '}
                     </span>
                   ))}
                 </span>
               )}
-            </Col>
-            <Col></Col>
-          </Row>
-        </Col>
-      </Row>
-    </Container >
+            </p>
+
+            {/* Moves Start here */}
+            <p className='ps-4 ms-3 thirty'>
+              All Moves
+            </p>
+            <Row>
+              <Col lg={6} className='ps-4 ms-4 twenty scrolltxt mb-5'>
+                {pokemonData && pokemonData.moves && (
+                  <span>
+                    {pokemonData.moves.map((pokemove, e) => (
+                      <span key={e}>
+                        {capitalizeFirstLetter(pokemove.move.name)}
+                        {e !== pokemonData.moves.length - 1 && ', '}
+                      </span>
+                    ))}
+                  </span>
+                )}
+              </Col>
+              <Col></Col>
+            </Row>
+          </Col>
+        </Row>
+      </Container >
     </>
   );
 }
