@@ -8,7 +8,7 @@ import dark from './assets/Dark.png'
 import dragon from './assets/Dragon.png'
 import electric from './assets/Eletric.png'
 import fairy from './assets/Fairy.png'
-import fight from './assets/Fight.png'
+import fighting from './assets/Fighting.png'
 import fire from './assets/Fire.png'
 import fly from './assets/Fly.png'
 import ghost from './assets/Ghost.png'
@@ -38,9 +38,8 @@ function App() {
     const data = await promise.json();
     setPokemonData(data)
     pokelocation(data)
+    pokeEvolution(data)
     setPokemonImage(data.sprites.other["official-artwork"].front_default)
-    console.log(data)
-
   };
 
   const pokelocation = async (data) => {
@@ -54,14 +53,35 @@ function App() {
   }
 
   const pokeEvolution = async (data) => {
-    const promise = await fetch(data.location_area_encounters)
-    const locData = await promise.json()
-    if (locData.length > 0) {
-      setPokeLoc(locData[0].location_area.name);
+    const promise1 = await fetch(data.species.url);
+    const speciesData = await promise1.json();
+  
+    const promise2 = await fetch(speciesData.evolution_chain.url);
+    const chainData = await promise2.json();
+  
+    const evolutionChain = extractEvolutionChain(chainData.chain);
+    
+    if (evolutionChain.length > 0) {
+      setPokeEvo(evolutionChain.join(' -> '));
     } else {
-      setPokeLoc('No location found');
+      setPokeEvo('No evolution');
     }
-  }
+  };
+  const extractEvolutionChain = (chain) => {
+    const evolution = [];
+    if (chain.species) {
+      evolution.push(capitalizeFirstLetter(chain.species.name));
+    }
+    if (chain.evolves_to && chain.evolves_to.length > 0) {
+      chain.evolves_to.forEach((evolves_to) => {
+        const subEvolution = extractEvolutionChain(evolves_to);
+        evolution.push(...subEvolution);
+      });
+    }
+    return evolution;
+  };
+  
+
 
   const handlerng = async () => {
     const randomId = Math.floor(Math.random() * 1025) + 1;
@@ -69,6 +89,7 @@ function App() {
     const rngdata = await promise.json();
     setPokemonData(rngdata)
     pokelocation(rngdata)
+    pokeEvolution(rngdata)
     setPokemonImage(rngdata.sprites.other["official-artwork"].front_default)
     console.log(rngdata)
   }
@@ -96,16 +117,16 @@ function App() {
 
   const saveToLocalStorage = (mon) => {
     let favorites = getlocalStorage();
-
-    if (!isObjectInFavorites(mon, favorites)) {
+    console.log(mon);
+    if (!favorites.includes(mon)) {
       favorites.push(mon);
     }
     localStorage.setItem("Favorites", JSON.stringify(favorites));
   }
 
-  const isObjectInFavorites = (obj, favorites) => {
-    return favorites.some(favorite => favorite.name === obj.name);
-  }
+  // const isObjectInFavorites = (obj, favorites) => {
+  //   return favorites.some(favorite => favorite.name === obj.name);
+  // }
 
   const getlocalStorage = () => {
     let localStorageData = localStorage.getItem("Favorites");
@@ -117,13 +138,12 @@ function App() {
 
   }
 
-  const removeFromLocalStorage = (mon) => {
+  const removeFromLocalStorage = (pokemonName) => {
     let favorites = getlocalStorage();
 
-    favorites = favorites.filter(favorite => favorite.name !== mon.name);
+    favorites = favorites.filter(favorite => favorite !== pokemonName); // Filter based on the name
 
-    localStorage.setItem("Favorites", JSON.stringify(favorites))
-
+    localStorage.setItem("Favorites", JSON.stringify(favorites));
   }
 
   const handleFavDiv = () => {
@@ -139,6 +159,7 @@ function App() {
     const data = await promise.json();
     setPokemonData(data);
     pokelocation(data);
+    pokeEvolution(data)
     setPokemonImage(data.sprites.other["official-artwork"].front_default);
   };
 
@@ -148,7 +169,7 @@ function App() {
     dragon: dragon,
     electric: electric,
     fairy: fairy,
-    fight: fight,
+    fighting: fighting,
     fire: fire,
     flying: fly,
     ghost: ghost,
@@ -166,18 +187,22 @@ function App() {
   const Types = ({ types }) => {
     return (
       <div className="text-end grid grid-cols-2">
-        {types.map((type, e) => (
-          <div className='col-span-1 lg:ps-0 lg:ms-0 ps-4 ms-3 mb-4'>
-            <img key={e} src={typeImages[type.type.name]}
+        {types.map((type, index) => (
+          <div className='col-span-1 lg:ps-0 lg:ms-0 ps-4 ms-3 mb-4' key={index}>
+            <img
+              src={typeImages[type.type.name]}
               alt={type.type.name}
               style={{
-                width: '200px', height: 'auto'
-              }} />
+                width: '200px',
+                height: 'auto'
+              }}
+            />
           </div>
         ))}
       </div>
     );
   };
+
 
   return (
     <>
@@ -230,11 +255,7 @@ function App() {
             </button>
           )}
           <br></br>
-          <button className='border-0 rounded-3xl my-1 py-2 twf'>
-            Evolutions
-          </button>
-          <br></br>
-          <button className='border-0 rounded-3xl py-2 twf mb-5' onClick={handlerng}>
+          <button className='border-0 rounded-3xl py-2 twf mb-5 mt-2' onClick={handlerng}>
             Random
           </button>
         </div>
@@ -314,7 +335,7 @@ function App() {
           </p>
           <p className='ps-4 ms-3 twenty mb-5'>
             <span>
-              {capitalizeFirstLetter(pokeLoc)}
+            {pokeEvo}
             </span>
           </p>
         </div>
